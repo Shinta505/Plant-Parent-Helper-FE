@@ -1,62 +1,72 @@
+import 'package:dio/dio.dart';
+import 'package:fe/core/api/api_client.dart';
+import 'package:fe/features/plant/data/repositories/plant_repository_impl.dart';
+import 'package:fe/features/plant/domain/usecases/add_plant.dart';
+import 'package:fe/features/plant/domain/usecases/get_my_plants.dart';
+import 'package:fe/features/plant/presentation/bloc/plant_bloc.dart';
+import 'package:fe/routes/app_router.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Ganti dengan path ke halaman login-mu yang sebenarnya jika sudah ada.
-// Contoh: import 'package:plant_parent_helper/features/auth/presentation/pages/login_page.dart';
+void main() async {
+  // Ensure that Flutter bindings are initialized before calling async code
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
-  runApp(const MyApp());
+  // Initialize SharedPreferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+
+  runApp(MyApp(sharedPreferences: sharedPreferences));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final SharedPreferences sharedPreferences;
+
+  const MyApp({super.key, required this.sharedPreferences});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Plant Parent Helper',
-      debugShowCheckedModeBanner: false, // Menghilangkan banner debug
-      theme: ThemeData(
-        // Tema utama aplikasi dengan skema warna hijau dan putih
-        primarySwatch: Colors.green,
-        scaffoldBackgroundColor: Colors.white,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.green,
-          brightness: Brightness.light,
-          primary: Colors.green,
-          secondary: Colors.lightGreen,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white, // Warna ikon dan teks di AppBar
-          elevation: 0,
-        ),
-        floatingActionButtonTheme: const FloatingActionButtonThemeData(
-          backgroundColor: Colors.green,
-        ),
-        useMaterial3: true,
-      ),
-      // Aplikasi akan langsung membuka LoginPage sebagai halaman pertama.
-      home: const LoginPage(),
-    );
-  }
-}
+    // --- Dependency Injection Setup ---
+    // This is where we create instances of our services and repositories.
+    // In a larger app, you might use a service locator like get_it.
+    final dio = Dio();
+    final apiClient = ApiClient(dio: dio, sharedPreferences: sharedPreferences);
+    final plantRepository = PlantRepositoryImpl(apiClient: apiClient);
+    final getMyPlants = GetMyPlants(plantRepository);
+    final addPlant = AddPlant(plantRepository);
+    // --- End of Dependency Injection ---
 
-/// Ini adalah halaman login sementara.
-/// Ganti widget ini dengan halaman login dari struktur folder `features` kamu nanti.
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Login'),
-      ),
-      body: const Center(
-        child: Text(
-          'Ini adalah Halaman Login',
-          style: TextStyle(fontSize: 24),
+    // Using MultiBlocProvider to prepare for more BLoCs in the future
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<PlantBloc>(
+          create: (context) => PlantBloc(
+            getMyPlants: getMyPlants,
+            addPlant: addPlant,
+          ),
         ),
+        // You can add other providers for other features here
+        // e.g., BlocProvider<AuthBloc>(...),
+      ],
+      child: MaterialApp(
+        title: 'Plant Parent Helper',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+          scaffoldBackgroundColor: Colors.white,
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.green,
+            // ignore: deprecated_member_use
+            background: Colors.white,
+          ),
+          textTheme: GoogleFonts.poppinsTextTheme(),
+          useMaterial3: true,
+        ),
+        // Use the AppRouter for navigation
+        onGenerateRoute: AppRouter.generateRoute,
+        // Set the initial route, which is the login page
+        initialRoute: AppRouter.loginRoute,
       ),
     );
   }
