@@ -159,7 +159,7 @@ class _CreatePlantPageState extends State<CreatePlantPage> {
           'note': _taskNoteController.text.isNotEmpty
               ? _taskNoteController.text
               : null,
-          'schedule_time': _scheduleTime!.toIso8601String(),
+          'schedule_time': _scheduleTime!.toUtc().toIso8601String(),
           'status': 'pending',
           'repeatInterval': _repeatInterval,
           'plantId': plantId,
@@ -181,7 +181,7 @@ class _CreatePlantPageState extends State<CreatePlantPage> {
         title: 'Waktunya Merawat Tanaman!',
         body: 'Saatnya $taskTypeName tanaman "$plantName".',
         scheduledTime: _scheduleTime!,
-        repeatInterval: _repeatInterval, //
+        repeatInterval: _repeatInterval,
       );
       // AKHIR BLOK TAMBAHAN
 

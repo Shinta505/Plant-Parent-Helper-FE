@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:fe/pages/login_page.dart';
 import 'package:fe/pages/detail_plant_page.dart';
 import 'package:fe/pages/create_plant_page.dart';
 import 'package:fe/pages/edit_plant_page.dart';
@@ -170,6 +171,35 @@ class _PlantListPageState extends State<PlantListPage> {
     }
   }
 
+  void showLogoutConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Yakin ingin logout dari aplikasi?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (Route<dynamic> route) => false,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, foregroundColor: Colors.white),
+              child: const Text("Logout"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,8 +211,7 @@ class _PlantListPageState extends State<PlantListPage> {
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white),
             tooltip: "Logout",
-            onPressed: () => Navigator.of(context)
-                .pushNamedAndRemoveUntil('/login', (route) => false),
+            onPressed: showLogoutConfirmation,
           ),
         ],
       ),

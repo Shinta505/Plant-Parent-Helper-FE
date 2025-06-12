@@ -108,10 +108,13 @@ class _SchedulePlantPageState extends State<SchedulePlantPage> {
   }
 
   String formatTimeInZones(DateTime time) {
-    final wib = time.toUtc().add(const Duration(hours: 7));
-    final wita = time.toUtc().add(const Duration(hours: 8));
-    final wit = time.toUtc().add(const Duration(hours: 9));
-    final london = time.toUtc().add(const Duration(hours: 1));
+    // `time` yang diterima di sini sudah merupakan waktu lokal (WIB/GMT+7)
+    // Jadi kita bisa langsung menghitung selisihnya
+    final wib = time; // Sudah dalam WIB
+    final wita = time.add(const Duration(hours: 1)); // WITA = WIB + 1 jam
+    final wit = time.add(const Duration(hours: 2)); // WIT = WIB + 2 jam
+    // London (BST/GMT+1) adalah WIB - 6 jam
+    final london = time.subtract(const Duration(hours: 6));
 
     final formatter = DateFormat('dd MMM yyyy, HH:mm:ss');
 
@@ -227,8 +230,9 @@ London: ${formatter.format(london)} (GMT+1)
   }
 
   Widget _buildTaskCard(Map<String, dynamic> task) {
-    String timeString = task['schedule_time'].toString().replaceAll('Z', '');
-    final scheduleTime = DateTime.parse(timeString);
+    // FIX: Konversi waktu dari server (UTC) ke lokal dengan benar
+    final scheduleTime = DateTime.parse(task['schedule_time']).toLocal();
+
     final now = DateTime.now();
     final bool isOverdue =
         now.isAfter(scheduleTime) && task['status'] == 'pending';
@@ -296,6 +300,7 @@ London: ${formatter.format(london)} (GMT+1)
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
+                  // Sekarang `scheduleTime` sudah benar
                   DateFormat('HH:mm').format(scheduleTime),
                   style: TextStyle(
                     fontSize: 20,
@@ -307,6 +312,7 @@ London: ${formatter.format(london)} (GMT+1)
                 Container(
                   constraints: const BoxConstraints(maxWidth: 160),
                   child: Text(
+                    // Panggil formatTimeInZones dengan waktu yang sudah benar
                     formatTimeInZones(scheduleTime),
                     style: const TextStyle(fontSize: 10, color: Colors.grey),
                     textAlign: TextAlign.right,

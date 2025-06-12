@@ -223,7 +223,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
           body: jsonEncode({
             'type': _taskType,
             'note': _taskNoteController.text,
-            'schedule_time': _scheduleTime!.toIso8601String(),
+            'schedule_time': _scheduleTime!.toUtc().toIso8601String(),
             'status': 'pending',
             'repeatInterval': _repeatInterval,
           }),
@@ -369,7 +369,7 @@ class _EditPlantPageState extends State<EditPlantPage> {
                           child: Text(
                             _scheduleTime == null
                                 ? 'Waktu belum dipilih'
-                                // MODIFIKASI: Gunakan DateFormat untuk tampilan yang lebih baik
+                                // MODIFIKASI: Ubah ke waktu lokal sebelum diformat
                                 : 'Jadwal: ${DateFormat('dd MMM yyyy, HH:mm').format(_scheduleTime!)}',
                           ),
                         ),
@@ -387,7 +387,8 @@ class _EditPlantPageState extends State<EditPlantPage> {
                                 // ignore: use_build_context_synchronously
                                 context: context,
                                 initialTime: TimeOfDay.fromDateTime(
-                                    _scheduleTime ?? now),
+                                  _scheduleTime ?? now,
+                                ),
                               );
                               if (pickedTime != null) {
                                 setState(() {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:fe/pages/login_page.dart';
 import 'package:fe/pages/plant_list_page.dart';
 import 'package:fe/pages/schedule_plant_page.dart';
 import 'package:fe/pages/nearest_store_page.dart';
@@ -124,8 +125,10 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                    '/login', (Route<dynamic> route) => false);
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  (Route<dynamic> route) => false,
+                );
               },
               style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red, foregroundColor: Colors.white),
